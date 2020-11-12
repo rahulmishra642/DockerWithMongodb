@@ -25,9 +25,9 @@ public class CustomerController {
     }
 
     @PutMapping
-    public ResponseEntity<String> updateCustomerDetails(@RequestBody CustomerRequest customer){
-        //dbrepository.updateCustomerDetails(customer);
-        return new ResponseEntity<>("customer", HttpStatus.OK);
+    public ResponseEntity<CustomerResponse> updateCustomerDetails(@RequestBody CustomerRequest customer){
+        CustomerResponse response = customerService.update(customer);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @GetMapping("/{customerId}")
