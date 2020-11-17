@@ -1,22 +1,39 @@
+
+buildscript {
+        repositories {
+        jcenter()
+            maven {
+                url 'https://plugins.gradle.org/m2/'
+            }
+        }
+        dependencies {
+           classpath "com.bmuschko:gradle-docker-plugin:6.6.1"
+        }
+    }
+
 plugins {
 	id 'org.springframework.boot' version '2.3.5.RELEASE'
 	id 'io.spring.dependency-management' version '1.0.10.RELEASE'
+	id "com.bmuschko.docker-remote-api" version "6.6.1"
 	id 'java'
 }
 
 group = 'com.rainyday'
 version = '0.0.1-SNAPSHOT'
 sourceCompatibility = '11'
-
+apply plugin: "com.bmuschko.docker-spring-boot-application"
 configurations {
 	compileOnly {
 		extendsFrom annotationProcessor
 	}
 }
 
+
 repositories {
 	mavenCentral()
 }
+
+
 
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
@@ -28,6 +45,8 @@ dependencies {
 		exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
 	}
 }
+
+
 
 test {
 	useJUnitPlatform()
