@@ -7,28 +7,55 @@ buildscript {
             }
         }
         dependencies {
-           //classpath "com.bmuschko:gradle-docker-plugin:6.6.1"
+           classpath "com.bmuschko:gradle-docker-plugin:6.6.1"
         }
     }
 
 plugins {
 	id 'org.springframework.boot' version '2.3.5.RELEASE'
 	id 'io.spring.dependency-management' version '1.0.10.RELEASE'
-	//id "com.bmuschko.docker-remote-api" version "6.6.1"
+	id 'com.bmuschko.docker-spring-boot-application' version '6.6.1'
 	id 'java'
 }
 
 group = 'com.rainyday'
 version = '0.0.1-SNAPSHOT'
 sourceCompatibility = '11'
+apply plugin: "com.bmuschko.docker-spring-boot-application"
 configurations {
 	compileOnly {
 		extendsFrom annotationProcessor
 	}
 }
 
+import com.bmuschko.gradle.docker.tasks.container.*
+import com.bmuschko.gradle.docker.tasks.image.*
+
+
+task createDockerfile(type: Dockerfile) {
+    from 'openjdk:11'
+    copyFile './build/libs/grocery*.jar', '/app/grocery.jar'
+    entryPoint 'java'
+    defaultCommand '-jar', '/app/my-app-1.0.jar'
+    exposePort(8080)
+}
+
+task buildImage(type: DockerBuildImage) {
+    dependsOn createDockerfile
+    images.add('covetrus/spring-boot:latest')
+}
+
+docker {
+    springBootApplication {
+        baseImage = 'openjdk:8-alpine'
+        ports = [9090, 8080]
+        images = ['spring-boot:1.115', 'spring-boot:latest']
+    }
+}
+
 
 repositories {
+	jcenter()
 	mavenCentral()
 }
 
