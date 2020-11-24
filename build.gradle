@@ -35,15 +35,28 @@ task createDockerfile(type: Dockerfile) {
     from 'openjdk:11'
     runCommand('mkdir -p /app/')
     //COPY '*.war /camunda/webapps/'
-    copyFile('./build/libs/*.jar', '/app/grocery.jar')
+   // copyFile("datadog/*.jar", '/datadog/dd-java-agent.jar')
+   
+   copyFile("build/libs/grocery-0.0.1-SNAPSHOT.jar", "/app/grocery.jar")
+   // copyFile('build/libs/grocery-0.0.1-SNAPSHOT.jar', '/app/grocery.jar')
     workingDir('/app')
     entryPoint 'java'
     defaultCommand '-jar', '/app/grocery.jar'
     exposePort(8080)
 }
 
+task buildMyAppImage(type: DockerBuildImage) {
+     inputDir.set(project.layout.buildDirectory.dir('docker'))
+    //inputDir = file('Dockerfile')
+    images.add('covetrus/spring-boot:latest')
+}
+
+
 task buildImage(type: DockerBuildImage) {
-    dependsOn createDockerfile
+    //dependsOn createDockerfile
+    //inputDir.set(file("$projectDir"))
+    inputDir = projectDir
+    inputDir.set(project.layout.buildDirectory.dir('docker'))
     images.add('covetrus/spring-boot:latest')
 }
 
