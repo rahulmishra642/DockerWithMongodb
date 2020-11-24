@@ -31,11 +31,15 @@ configurations {
 import com.bmuschko.gradle.docker.tasks.container.*
 import com.bmuschko.gradle.docker.tasks.image.*
 
+task copyFileJar(type: Copy) {
+    from "$projectDir/build/libs/*.jar"
+    into "/app/grocery.jar"
+}
+
 task createDockerfile(type: Dockerfile) {
     from 'openjdk:11'
     runCommand('mkdir -p /app/')
-    //COPY '*.war /camunda/webapps/'
-    copyFile('./build/libs/*.jar', '/app/grocery.jar')
+    dependsOn copyFileJar
     workingDir('/app')
     entryPoint 'java'
     defaultCommand '-jar', '/app/grocery.jar'
@@ -49,7 +53,7 @@ task buildImage(type: DockerBuildImage) {
 
 
 task createDBContainer(type: DockerCreateContainer) {
-    targetImageId 'mongo:latest'
+    targetImageId "mongo:latest"
     containerName = 'mongocontainer'
     hostConfig.autoRemove = true
 }
@@ -60,14 +64,17 @@ task createMyAppContainer(type: DockerCreateContainer) {
     hostConfig.portBindings = ['8080:8080']
     hostConfig.autoRemove = true
     hostConfig.links = ["mongocontainer:database"]
-
-    // If you use Systemd in containers you should also add lines. #320
     hostConfig.binds = ['/sys/fs/cgroup': '/sys/fs/cgroup']
     tty = true
 }
 
+task startDbAppContainer(type: DockerStartContainer) {
+    dependsOn createDBContainer
+    targetContainerId createDBContainer.getContainerId()
+}
+
 task startMyAppContainer(type: DockerStartContainer) {
-    dependsOn createMyAppContainer
+    dependsOn createMyAppContainer, startDbAppContainer
     targetContainerId createMyAppContainer.getContainerId()
 }
 
